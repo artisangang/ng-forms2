@@ -1,6 +1,12 @@
 import { Injectable } from "@angular/core";
 import { Http, Headers, Response, Request, RequestMethod, URLSearchParams, RequestOptions  } from "@angular/http";
 
+import { Errorhandler } from './error-handler';
+
+
+import {Observable} from 'rxjs/Rx';
+import 'rxjs/add/operator/map';
+
 @Injectable()
 
 export class ServiceProvider  { 
@@ -11,18 +17,19 @@ export class ServiceProvider  {
 
 	 exec (url, data:any, config:any) {
 
-	 	console.log(data);
 
+	 	const instance = this;
 
 	 	config.method = config.method || 'get';
 
-	 	let options = new RequestOptions();
-	 	let headers = new Headers({
-			     'Content-Type': 'application/x-www-form-urlencoded',
-			     'Accept': 'application/json'});
+	 	let options = new RequestOptions(); 	
 	 		
 
 	 	if (config.method == 'get') { 	
+
+	 		let headers = new Headers({
+			     'Content-Type': 'application/x-www-form-urlencoded',
+			     'Accept': 'application/json'});
 	 				  
 
 			  if (data){
@@ -47,9 +54,7 @@ export class ServiceProvider  {
 
 			}
 
-	 	} else {
-
-	 		 		
+	 	} else {	 		 		
 
 			  if (data){
 
@@ -73,23 +78,55 @@ export class ServiceProvider  {
 			}
 
 			options.headers = new Headers();
-
-
-			if (config.multipart == true) {
-				options.headers = new Headers();
-			}
-
 			options.method = 'post' 
 
 	 	}
 
-	 	console.log(options.body);
-	 	
-	 	this.http.request(url, options).subscribe( res => {
+	 	if (typeof config.before == 'function') {
+	 		options = config.before(options);
+	 	}
 
-	 		console.log(res.json());
+	 	return new Promise(function(resolve, reject) {
+		 	
+		 	instance.http.request(url, options).subscribe( (res) => {
 
-	 	}, err => {});
+		 		res = res.json();
+
+		 		if (typeof config.after == 'function') {
+			 		res = config.after(null, res);
+			 	}
+
+		 		
+		 		data.response = Object.assign(res, (new Errorhandler(data.errors || {})).json());
+		 		
+		 		console.log(data.response);
+
+		 		if (typeof config.onSuccess == 'function') {
+		 			config.onSuccess(res);
+		 		}
+
+		 		resolve(res);
+
+
+		 	}, (err) => {
+		 		
+		 		if (err.status == 422) {	 			
+		 			data.response = new Errorhandler(err._body);
+		 		}
+
+		 		if (typeof config.onError == 'function') {
+		 			config.onError(err);
+		 		}
+
+		 		if (typeof config.after == 'function') {
+			 		config.after(err, null);
+			 	}
+
+		 		reject(err);
+
+		 	});
+
+		 });
 
 
 	 }
