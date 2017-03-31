@@ -2,11 +2,11 @@
 Form Handler for Angular 2
 
 
-** Note: for angular 1x check ng-forms repository
+**Note: for angular 1x check ng-forms repository**
 
 # Usage
 
-** In Module
+**In Module**
 ```javascript
 
 import { ngForm } from '../ng-form/module';
@@ -23,7 +23,7 @@ import { ngForm } from '../ng-form/module';
 ```
 
 
-** In Component
+**In Component**
 
 ```javascript
 
@@ -64,14 +64,14 @@ export class AppComponent {
 ```
 
 
-** with server side validation
+**with server side validation**
 
 ```html
 <input type="text" [(ngModel)]="form.email" name="user"><br>
 <p [ngClass]="{'has-error': form.response?.hasError('email')}" [hidden]="!form.response?.hasError('email')">{{form?.response?.error('email')}}</p>
 ```  
 
-** Validation errors response Sample 1:
+**Validation errors response Sample 1:**
 
 ```javascript
   {
@@ -81,7 +81,7 @@ export class AppComponent {
   }
 ```
 
-** Validation errors response Sample 2:
+**Validation errors response Sample 2:**
 
 Send 422 in Header Status
 
